@@ -106,9 +106,9 @@ void EnergyMonitor::calcVI(unsigned int crossings, unsigned int timeout)
     // B) Apply digital low pass filters to extract the 2.5 V or 1.65 V dc offset,
     //     then subtract this - signal is now centred on 0 counts.
     //-----------------------------------------------------------------------------
-    offsetV = offsetV + ((sampleV-offsetV)/1024);
+    offsetV = offsetV + ((sampleV-offsetV)/ADC_COUNTS);
     filteredV = sampleV - offsetV;
-    offsetI = offsetI + ((sampleI-offsetI)/1024);
+    offsetI = offsetI + ((sampleI-offsetI)/ADC_COUNTS);
     filteredI = sampleI - offsetI;
 
     //-----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ double EnergyMonitor::calcIrms(unsigned int Number_of_Samples)
 
     // Digital low pass filter extracts the 2.5 V or 1.65 V dc offset,
     //  then subtract this - signal is now centered on 0 counts.
-    offsetI = (offsetI + (sampleI-offsetI)/1024);
+    offsetI = (offsetI + (sampleI-offsetI)/ADC_COUNTS);
     filteredI = sampleI - offsetI;
 
     // Root-mean-square method current
@@ -254,6 +254,8 @@ long EnergyMonitor::readVcc() {
   result |= ADCH<<8;
   result = READVCC_CALIBRATION_CONST / result;  //1100mV*1024 ADC steps http://openenergymonitor.org/emon/node/1186
   return result;
+  #elif defined(ARDUINO_ARCH_RENESAS)
+  return (long) (analogReference() * 1000.0);
   #elif defined(__arm__)
   return (3300);                                  //Arduino Due
   #else
